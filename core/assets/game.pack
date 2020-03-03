@@ -1,0 +1,47 @@
+
+images1.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+apple
+  rotate: false
+  xy: 2, 2
+  size: 300, 300
+  orig: 300, 300
+  offset: 0, 0
+  index: -1
+grass
+  rotate: false
+  xy: 304, 2
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+pointer
+  rotate: false
+  xy: 386, 2
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+knight
+  rotate: false
+  xy: 304, 84
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+arrow
+  rotate: false
+  xy: 366, 84
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+hp
+  rotate: false
+  xy: 386, 68
+  size: 60, 8
+  orig: 60, 8
+  offset: 0, 0
+  index: -1
