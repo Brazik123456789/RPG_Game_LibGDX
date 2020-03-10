@@ -2,7 +2,6 @@ package com.geekbrains.rpg.game.logic;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.geekbrains.rpg.game.logic.utils.MonstersController;
 
 public class GameController {
     private ProjectilesController projectilesController;

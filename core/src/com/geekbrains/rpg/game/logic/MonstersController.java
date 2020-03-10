@@ -1,7 +1,8 @@
-package com.geekbrains.rpg.game.logic.utils;
+package com.geekbrains.rpg.game.logic;
 
 import com.geekbrains.rpg.game.logic.GameController;
 import com.geekbrains.rpg.game.logic.Monster;
+import com.geekbrains.rpg.game.logic.utils.ObjectPool;
 
 import java.util.List;
 
