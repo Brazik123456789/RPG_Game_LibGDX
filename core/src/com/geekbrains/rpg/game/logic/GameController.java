@@ -3,20 +3,28 @@ package com.geekbrains.rpg.game.logic;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameController {
     private ProjectilesController projectilesController;
     private MonstersController monstersController;
+    private WeaponController weaponController;
+    private List<GameCharacter> allCharacters;
     private Map map;
     private Hero hero;
-    private Monster monster;
     private Vector2 tmp, tmp2;
+
+    public List<GameCharacter> getAllCharacters() {
+        return allCharacters;
+    }
 
     public Hero getHero() {
         return hero;
     }
 
-    public Monster getMonster() {
-        return monster;
+    public MonstersController getMonstersController() {
+        return monstersController;
     }
 
     public Map getMap() {
@@ -27,29 +35,30 @@ public class GameController {
         return projectilesController;
     }
 
-    public MonstersController getMonstersController() {
-        return monstersController;
+    public WeaponController getWeaponController() {
+        return weaponController;
     }
 
     public GameController() {
+        this.allCharacters = new ArrayList<>();
         this.projectilesController = new ProjectilesController();
-        this.monstersController = new MonstersController();
         this.hero = new Hero(this);
-        this.monster = new Monster(this);
         this.map = new Map();
+        this.monstersController = new MonstersController(this, 5);
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);
+        this.weaponController = new WeaponController(this);
     }
 
     public void update(float dt) {
+        allCharacters.clear();
+        allCharacters.add(hero);
+        allCharacters.addAll(monstersController.getActiveList());
+
         hero.update(dt);
-        monster.update(dt);
-
-
-        checkCollisions();
-        collideUnits(hero, monster);
-        projectilesController.update(dt);
         monstersController.update(dt);
+        checkCollisions();
+        projectilesController.update(dt);
     }
 
     public void collideUnits(GameCharacter u1, GameCharacter u2) {
@@ -72,33 +81,38 @@ public class GameController {
     }
 
     public void checkCollisions() {
+        for (int i = 0; i < monstersController.getActiveList().size(); i++) {
+            Monster m = monstersController.getActiveList().get(i);
+            collideUnits(hero, m);
+        }
+        for (int i = 0; i < monstersController.getActiveList().size() - 1; i++) {
+            Monster m = monstersController.getActiveList().get(i);
+            for (int j = i + 1; j < monstersController.getActiveList().size(); j++) {
+                Monster m2 = monstersController.getActiveList().get(j);
+                collideUnits(m, m2);
+            }
+        }
+
         for (int i = 0; i < projectilesController.getActiveList().size(); i++) {
             Projectile p = projectilesController.getActiveList().get(i);
             if (!map.isAirPassable(p.getCellX(), p.getCellY())) {
                 p.deactivate();
                 continue;
             }
-            if (p.getPosition().dst(monster.getPosition()) < 24) {
+            if (p.getPosition().dst(hero.getPosition()) < 24 && p.getOwner() != hero) {
                 p.deactivate();
-                if (monster.takeDamage(1)) {
-                    hero.addCoins(MathUtils.random(1, 10));
+                hero.takeDamage(p.getOwner(), 1);
+            }
+            for (int j = 0; j < monstersController.getActiveList().size(); j++) {
+                Monster m = monstersController.getActiveList().get(j);
+                if (p.getOwner() == m) {
+                    continue;
                 }
-            }
-        }
-    }
-
-    public void checkMonsters() {
-        for (int i = 0; i < monstersController.getActiveList().size(); i++) {
-            Monster p = monstersController.getActiveList().get(i);
-
-            if (!map.isAirPassable(p.getCellX(), p.getCellY())) {
-                p.deactivate();
-                continue;
-            }
-            if (p.getPosition().dst(monster.getPosition()) < 24) {
-                p.deactivate();
-                if (monster.takeDamage(1)) {
-                    hero.addCoins(MathUtils.random(1, 10));
+                if (p.getPosition().dst(m.getPosition()) < 24) {
+                    p.deactivate();
+                    if (m.takeDamage(p.getOwner(), 1)) {
+                        hero.addCoins(MathUtils.random(1, 10));
+                    }
                 }
             }
         }

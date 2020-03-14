@@ -6,17 +6,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.MapElement;
 import com.geekbrains.rpg.game.logic.utils.Poolable;
+import com.geekbrains.rpg.game.screens.utils.Assets;
 
-public class Projectile implements Poolable, MapElement {
+public class Weapon implements Poolable, MapElement {
     private TextureRegion textureRegion;
-    private GameCharacter owner;
     private Vector2 position;
     private Vector2 velocity;
     private boolean active;
-
-    public GameCharacter getOwner() {
-        return owner;
-    }
 
     @Override
     public int getCellX() {
@@ -37,15 +33,14 @@ public class Projectile implements Poolable, MapElement {
         return active;
     }
 
-    public Projectile() {
-        this.textureRegion = null;
+    public Weapon(GameController gc) {
+        this.textureRegion = Assets.getInstance().getAtlas().findRegion("pointer"); ;
         this.position = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
         this.active = false;
     }
 
-    public void setup(GameCharacter owner, TextureRegion textureRegion, float x, float y, float targetX, float targetY) {
-        this.owner = owner;
+    public void setup(TextureRegion textureRegion, float x, float y, float targetX, float targetY) {
         this.textureRegion = textureRegion;
         this.position.set(x, y);
         this.velocity.set(targetX, targetY).sub(x, y).nor().scl(800.0f);
@@ -62,8 +57,7 @@ public class Projectile implements Poolable, MapElement {
     }
 
     public void update(float dt) {
-        position.mulAdd(velocity, dt);
-        if (position.x < 0 || position.x > 1280 || position.y < 0 || position.y > 720) {
+        if (active) {
             deactivate();
         }
     }
