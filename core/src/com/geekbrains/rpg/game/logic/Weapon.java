@@ -3,25 +3,31 @@ package com.geekbrains.rpg.game.logic;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.geekbrains.rpg.game.logic.utils.Consumable;
 import com.geekbrains.rpg.game.logic.utils.MapElement;
 import com.geekbrains.rpg.game.logic.utils.Poolable;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
-public class Weapon implements Poolable, MapElement {
-    private TextureRegion textureRegion;
+public class Weapon implements MapElement, Poolable, Consumable {
+    public enum Type {
+        MELEE, RANGED
+    }
+
+    private TextureRegion texture;
+    private Type type;
+    private String title;
     private Vector2 position;
-    private Vector2 velocity;
+    private int minDamage;
+    private int maxDamage;
+    private float speed;
+    private float range;
     private boolean active;
 
     @Override
-    public int getCellX() {
-        return (int) position.x / 80;
-    }
-
-    @Override
-    public int getCellY() {
-        return (int) position.y / 80;
+    public boolean isActive() {
+        return active;
     }
 
     public Vector2 getPosition() {
@@ -29,36 +35,105 @@ public class Weapon implements Poolable, MapElement {
     }
 
     @Override
-    public boolean isActive() {
-        return active;
-    }
-
-    public Weapon(GameController gc) {
-        this.textureRegion = Assets.getInstance().getAtlas().findRegion("pointer"); ;
-        this.position = new Vector2(0, 0);
-        this.velocity = new Vector2(0, 0);
-        this.active = false;
-    }
-
-    public void setup(TextureRegion textureRegion, float x, float y, float targetX, float targetY) {
-        this.textureRegion = textureRegion;
-        this.position.set(x, y);
-        this.velocity.set(targetX, targetY).sub(x, y).nor().scl(800.0f);
-        this.active = true;
-    }
-
-    public void deactivate() {
+    public void consume(GameCharacter gameCharacter) {
+        gameCharacter.setWeapon(this);
         active = false;
     }
 
     @Override
     public void render(SpriteBatch batch, BitmapFont font) {
-        batch.draw(textureRegion, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, velocity.angle());
+        batch.draw(texture, position.x - 32, position.y - 32);
     }
 
-    public void update(float dt) {
-        if (active) {
-            deactivate();
+    @Override
+    public int getCellX() {
+        return (int) (position.x / 80);
+    }
+
+    @Override
+    public int getCellY() {
+        return (int) (position.y / 80);
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public int getMinDamage() {
+        return minDamage;
+    }
+
+    public int getMaxDamage() {
+        return maxDamage;
+    }
+
+    public int generateDamage() {
+        return MathUtils.random(minDamage, maxDamage);
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public float getRange() {
+        return range;
+    }
+
+    public void setPosition(float x, float y) {
+        this.position.set(x, y);
+    }
+
+    public Weapon() {
+        this.position = new Vector2(0, 0);
+    }
+
+    public Weapon(Type type, String title, int minDamage, int maxDamage, float speed, float range) {
+        this.type = type;
+        this.title = title;
+        this.minDamage = minDamage;
+        this.maxDamage = maxDamage;
+        this.speed = speed;
+        this.range = range;
+    }
+
+    public void setup(Type type, String title, int minDamage, int maxDamage, float speed, float range) {
+        this.type = type;
+        if (type == Type.MELEE) {
+            texture = Assets.getInstance().getAtlas().findRegion("weaponMelee");
+        } else {
+            texture = Assets.getInstance().getAtlas().findRegion("weaponRanged");
         }
+        this.title = title;
+        this.minDamage = minDamage;
+        this.maxDamage = maxDamage;
+        this.speed = speed;
+        this.range = range;
+        this.active = true;
+    }
+
+    public static Weapon createSimpleRangedWeapon() {
+        return new Weapon(
+                Type.RANGED,
+                "Bow",
+                MathUtils.random(1, 2),
+                MathUtils.random(3, 5),
+                0.5f,
+                150.0f
+        );
+    }
+
+    public static Weapon createSimpleMeleeWeapon() {
+        return new Weapon(
+                Type.MELEE,
+                "Sword",
+                MathUtils.random(1, 2),
+                MathUtils.random(3, 4),
+                0.4f,
+                60.0f
+        );
     }
 }
