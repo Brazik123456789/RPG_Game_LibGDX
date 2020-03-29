@@ -48,6 +48,10 @@ public abstract class GameCharacter implements MapElement {
 
     protected Weapon weapon;
 
+    protected int skill;
+    protected int level;
+
+
     public void addCoins(int amount) {
         coins += amount;
     }
@@ -69,12 +73,13 @@ public abstract class GameCharacter implements MapElement {
         return weapon;
     }
 
-    public void restoreHp(float percent) {
+    public int restoreHp(float percent) {
         int amount = (int) (hpMax * percent);
-        hp += amount;
-        if (hp > hpMax) {
-            hp = hpMax;
+        if (hp + amount > hpMax) {
+            amount = hpMax - hp;
         }
+        hp += amount;
+        return amount;
     }
 
     public void changePosition(float x, float y) {
@@ -125,6 +130,8 @@ public abstract class GameCharacter implements MapElement {
         this.stateTimer = 1.0f;
         this.timePerFrame = 0.2f;
         this.target = null;
+        this.level = 1;
+        this.skill = 0;
     }
 
     public int getCurrentFrameIndex() {
@@ -134,6 +141,10 @@ public abstract class GameCharacter implements MapElement {
     public void update(float dt) {
         lifetime += dt;
         damageTimer -= dt;
+
+        weapon.setMinDamage(weapon.getMinDamage()*level);
+        weapon.setMaxDamage(weapon.getMaxDamage()*level);
+
         if (damageTimer < 0.0f) {
             damageTimer = 0.0f;
         }
@@ -150,11 +161,20 @@ public abstract class GameCharacter implements MapElement {
                 if (weapon.getType() == Weapon.Type.MELEE) {
                     tmp.set(target.position).sub(position);
                     gc.getSpecialEffectsController().setupSwordSwing(position.x, position.y, tmp.angle());
-                    target.takeDamage(this, weapon.generateDamage());
+                    if (target.takeDamage(this, weapon.generateDamage())){
+                        skill += 20/level;
+                        if (skill >= level*50){
+                            level ++;
+                            skill = 0;
+                        }
+                    }
+
                 }
                 if (weapon.getType() == Weapon.Type.RANGED && target != null) {
                     gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y, weapon.generateDamage());
                 }
+
+
             }
         }
         slideFromWall(dt);
@@ -182,7 +202,6 @@ public abstract class GameCharacter implements MapElement {
     }
 
     public boolean takeDamage(GameCharacter attacker, int amount) {
-        gc.getMsgController().getActiveElement().setup(position.x, position.y, attacker.getWeapon().getMaxDamage());
         lastAttacker = attacker;
         hp -= amount;
         damageTimer += 0.4f;
